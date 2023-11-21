@@ -67,6 +67,21 @@ toexpr <- function(x, plain = NULL) {
   as.expression(unname(Map(function(f,v) substitute(f(v), list(f=as.name(f), v=as.character(v))), getfun(x), x)))
 }
 
+# Standard error and mean function
+se <- function(x, ...) sqrt(var(x, ...)/length(x))
+
+data_summary <- function(data, varname, groupnames){
+  require(plyr)
+  summary_func <- function(x, col){
+    c(mean = mean(x[[col]], na.rm=TRUE),
+      se = se(x[[col]], na.rm=TRUE))
+  }
+  data_sum<-ddply(data, groupnames, .fun=summary_func,
+                  varname)
+  data_sum <- rename(data_sum, c("mean" = varname))
+  return(data_sum)
+}
+
 #### UPLOAD DATA ####
 # Import asv and tax tab
 asv <- read.delim('Data/Counts.txt')
@@ -96,8 +111,8 @@ depths <- colSums(asv) # prepare df containing the sequencing depth
 plot(depths) # sequencing depth does not have any outliers or very low numbers
 min(depths)
 max(depths)
-quantile(depths, probs = seq(0,1,.05)) # Show all sequencing depth quantiles
-# Remove all samples that do not fall into the 90% quantile range
+quantile(depths, probs = seq(0,1,.5)) # Show all sequencing depth quantiles
+# Remove all samples outside of the 90% quantile range
 asv <- asv[,colSums(asv)<272993]
 asv <- asv[,colSums(asv)>32233]
 rm(depths)
@@ -226,6 +241,101 @@ OTU = otu_table(asv.clr, taxa_are_rows = TRUE)
 
 # Create a phyloseq object
 ps_clr <- phyloseq(OTU, TAX, SAM)
+
+#### CALCULATE & PLOT DIVERSITY ####
+ps.rich <- microbial::richness(ps,  method = c("Observed", "Evenness", "Shannon"))
+
+# Add diversity measures to sample tab
+sam$Richness <- ps.rich$Observed
+sam$Evenness <- ps.rich$Evenness
+sam$Shannon <- ps.rich$Shannon
+sam$cosm <- as.factor(sam$cosm)
+div <- subset(sam, day > 12)
+
+## Plot diversity
+# Create summary of data for shannon index
+div_shan <- data_summary(div, varname="Shannon", 
+                         groupnames=c("day", "temp"))
+
+shan_time <- ggplot(div_shan, aes(x=day, y=Shannon, color=temp)) + 
+  geom_point(position=position_dodge(0.05), size = 4)+
+  geom_line(size = 1)+
+  geom_errorbar(aes(ymin=Shannon-se, ymax=Shannon+se), size=1.1, width=.8,
+                position=position_dodge(0.05)) +
+  plot.theme +
+  labs(x="Incubation day", y=bquote("Shannon index")) + 
+  scale_x_continuous(breaks = seq(15, 27, 3))+
+  scale_color_manual(values=temp_pal)
+
+shan_time
+ggsave("Output/ShannonOverTime.png", shan_time, height = 5, width = 8, dpi = 320)
+
+### Statistics of diversity metrices
+### TWO-WAY REPEATED MEASURES ANOVA
+#https://stats.stackexchange.com/questions/181563/analyzing-repeated-measures-experiment-with-multiple-treatment-groups-and-multip
+#https://www.datanovia.com/en/lessons/repeated-measures-anova-in-r/#two-way-repeated-measures-anova
+#https://www.r-bloggers.com/2021/04/repeated-measures-of-anova-in-r-complete-tutorial/
+
+# Exclude groups with too few datapoints
+div <- subset(div, day != "24")
+
+## Shannon
+# Check assumptions
+pan2 <- div %>% select(Shannon, temp, day, cosm)
+pan2$day <- as.factor(pan2$day)
+
+# Summary
+pan2 %>%
+  group_by(temp, day) %>%
+  get_summary_stats(Shannon, type = "mean_sd")
+
+bxp <- ggboxplot(
+  pan2, x = "day", y = "Shannon",
+  color = "temp", palette = temp_pal)
+bxp
+
+# Outlier
+pan2 %>%
+  group_by(temp, day) %>%
+  identify_outliers(Shannon)
+# these outliers are still fine as they are not extreme
+
+# Check normality
+pan2 %>%
+  group_by(temp, day) %>%
+  shapiro_test(Shannon)
+
+ggqqplot(pan2, "Shannon", ggtheme = theme_bw()) +
+  facet_grid(day ~ temp, labeller = "label_both")
+# very few datapoints, but apparently normal
+
+# Compute 2-way RM ANOVA
+res.aov <- anova_test(
+  data = pan2, dv = Shannon, wid = cosm, 
+  between = temp, within = day)
+res.aov
+# sphericity not violated
+
+# Considering a significant interaction
+# main effect of day
+one.way <- pan2 %>%
+  group_by(temp) %>%
+  anova_test(dv = Shannon, wid = cosm, within = day) %>%
+  get_anova_table() %>%
+  adjust_pvalue(method = "bonferroni")
+one.way
+# there is a significant main effect within 6 degree
+# thus perform pairwise comparisons
+
+# pairwise comparisons
+pwc <- pan2 %>%
+  group_by(temp) %>%
+  pairwise_t_test(
+    Shannon ~ day, paired = TRUE,
+    p.adjust.method = "bonferroni"
+  )
+print(pwc, n=30)
+# 6 degree differs between day 15 and 27 as well as between 24 and 27
 
 #### BARGRAPHS ####
 ### Bargraph on class level over time per treatment
@@ -376,8 +486,6 @@ ggsave("Output/PhytoSpecies.png", species_plot, height = 10, width = 20, dpi = 3
 ### Compare different ordination methods
 
 ## Prepare datasets
-ps_exp_clr <- subset_samples(ps_clr, day != "0" & day != "3" & day != "6" & day != "9" & day != "12")
-ps_exp_srs <- subset_samples(ps, day != "0" & day != "3" & day != "6" & day != "9" & day != "12")
 ps_exp_raw <- subset_samples(ps_raw, day != "0" & day != "3" & day != "6" & day != "9" & day != "12")
 
 ## Ordinate
@@ -401,17 +509,7 @@ ordi_aitch <- ps_exp_raw %>%
 
 ordi_aitch
 
-ordi_aitch2 <- ps_exp_clr %>%
-  dist_calc("euclidean") %>%
-  ord_calc() %>%
-  ord_plot(shape = "day", size = 2) +
-  scale_fill_manual(values=temp_pal) +
-  scale_color_manual(values=uni_pal) +
-  ggforce::geom_mark_ellipse(aes(fill = temp, color = uni_ID))
-
-ordi_aitch2
-
-# All show the same pattern: higher dispersion at 18°C than at the other two temperatures, at which it is comparable
+# Show the same pattern: higher dispersion at 18°C than at the other two temperatures, at which it is comparable
 
 ## Save the simplest version
 ggsave("Output/SpreadReplicates.png", ordi_aitch, dpi = 300, width = 8, height = 4)
@@ -473,14 +571,14 @@ dist_plot <- ggplot(distances, aes(x=day, y=betadisper, color=temp, group=intera
   geom_point(position = position_dodge(width=2.25))+
   labs(x="Incubation time (d)", y=bquote("Beta-dispersion")) +
   plot.theme+
-  ggtitle("Genus-level variation") +
+  ggtitle("Species-level variation") +
   scale_x_continuous(breaks = seq(15, 27, 3))+
   scale_color_manual(values=temp_pal)+
   scale_fill_manual(values=temp_pal2)
 
 dist_plot
 
-ggsave("Output/Betadispersion.png", dist_plot, dpi = 300, width = 8, height = 4)
+#ggsave("Output/Betadispersion.png", dist_plot, dpi = 300, width = 8, height = 4)
 
 ### Repeated measures ANOVAs
 ## Subsets of 6 & 12 and 6 & 18

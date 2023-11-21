@@ -170,7 +170,7 @@ res.aov
 # Check assumptions
 pan2 <- pan %>% select(chl_µgL, temp, day, plankto_ID)
 pan2$day <- as.factor(pan2$day)
-pan2 <- subset(pan2, temp != "6")
+#pan2 <- subset(pan2, temp != "6")
 
 # Summary
 pan2 %>%
@@ -202,8 +202,10 @@ res.aov <- anova_test(
   data = pan2, dv = chl_µgL, wid = plankto_ID, 
   between = temp, within = day)
 res.aov
-# sphericity not violated
+# significant temp effect and without 6 significant time effect
 
+
+### Ecosystem functions
 ## Create a table for statistical outout of two-way RM anova
 Parameter <- rep(c("Biomass", "GOP", "C:N", "C:P"), each=3)
 Effect <- rep(c("Temperature","Time","Temperature:Time"), times=4)
