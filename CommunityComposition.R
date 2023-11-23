@@ -153,6 +153,8 @@ tax <- filter(tax, tax$Division!="Ochrophyta:plas")
 tax <- filter(tax, tax$Supergroup!="Archaeplastida:plas")
 tax <- filter(tax, tax$Supergroup!="Hacrobia:nucl")
 
+tax_all <- tax
+
 # Create tax file for phytoplankton by exluding hetero- and mixotrophs
 # based on https://doi.org/10.1111/jeu.12691
 tax <- filter(tax, tax$Supergroup!="Cercozoa")
@@ -175,6 +177,7 @@ tax <- filter(tax, tax$Division!="Streptophyta")
 tax <- filter(tax, tax$Division!="Dinoflagellata") 
 tax <- filter(tax, tax$Class!="Syndiniales")
 tax <- filter(tax, tax$Class!="Noctilucophyceae")
+tax <- filter(tax, tax$Class!="Chrysophyceae")
 
 unique(tax$Division)
 unique(tax$Class)
@@ -379,11 +382,7 @@ genus <- df2 %>% select(Sample, Genus, Abundance, temp, day, rep)
 # Rename species for prettier plotting
 genus$Genus[genus$Abundance < 100] <- "Other"
 genus <- genus %>%
-  mutate(Genus = recode(Genus, "Chrysophyceae_Clade-F_X" = 'Chrysophyceae')) %>%
-  mutate(Genus = recode(Genus, "Chrysophyceae_Clade-C_X" = 'Chrysophyceae')) %>%
-  mutate(Genus = recode(Genus, "Chrysophyceae_XXX" = 'Chrysophyceae')) %>%
   mutate(Genus = recode(Genus, "Prymnesiophyceae_Clade_B4_X" = 'Prymnesiophyceae indet.')) %>%
-  mutate(Genus = recode(Genus, "Prasinodermaceae_X" = 'Prasinodermaceae indet.')) %>%
   mutate(Genus = recode(Genus, "Parmales_env_1_X" = 'Parmales')) %>%
   mutate(Genus = recode(Genus, "Pedinellales_X" = 'Pedinellales'))
 
@@ -393,13 +392,13 @@ genus <- subset(genus, day > 12)
 
 ## Genera over whole time
 # Create color palette
-gen_pal_all <- qualpal(36, colorspace=list(h=c(0,360), s=c(0.3,1), l=c(0.2,0.8)))
+gen_pal_all <- qualpal(33, colorspace=list(h=c(0,360), s=c(0.3,1), l=c(0.2,0.8)))
 
-leg_all <- c("Aureococcus", "Bathycoccus", "Brockmanniella", "Chaetoceros", "Chrysochromulina", "Chrysophyceae", "Corethron", "Cylindrotheca",
+leg_all <- c("Aureococcus", "Bathycoccus", "Brockmanniella", "Chaetoceros", "Chrysochromulina", "Corethron", "Cylindrotheca",
          "Dictyocha", "Ditylum", "Florenciella", "Gephyrocapsa", "Haptolina", "Leptocylindrus", "Micromonas",
-         "Minidiscus", "Odontella", "Ostreococcus", "Other", "Paraphysomonas", "Parmales", "Pedinellales", "Phaeocystis",
-         "Picochlorum", "Plagioselmis", "Prasinodermaceae indet.", "Prymnesiophyceae indet.", "Prymnesium",
-         "Pseudo-nitzschia", "Pterosperma", "Pyramimonas", "Skletonema", "Spumella", "Teleaulax", "Thalassionema",
+         "Minidiscus", "Odontella", "Ostreococcus", "Other", "Parmales", "Pedinellales", "Phaeocystis",
+         "Picochlorum", "Plagioselmis", "Prymnesiophyceae indet.", "Prymnesium",
+         "Pseudo-nitzschia", "Pterosperma", "Pyramimonas", "Skletonema", "Teleaulax", "Thalassionema",
          "Thalassiosira")
 
 ## Plotting
@@ -409,7 +408,7 @@ genus_plot_all <- ggplot(genus_all, aes(fill = Genus, x = day, y = Abundance)) +
   bar.theme +
   scale_x_continuous(breaks = seq(0,27,3)) +
   scale_fill_manual(labels = toexpr(leg_all,
-                                    plain = c('Other', 'Prasinodermaceae indet.', 'Prymnesiophyceae indet.')),
+                                    plain = c('Other', 'Prymnesiophyceae indet.')),
                     values = gen_pal_all$hex) +
   theme(legend.text.align = 0)
 
@@ -418,13 +417,13 @@ ggsave("Output/PhytoGeneraAll.png", genus_plot_all, height = 10, width = 16, dpi
 
 ## Genera only over experiment
 # Create color palette
-gen_pal <- qualpal(35, colorspace=list(h=c(0,360), s=c(0.3,1), l=c(0.2,0.8)))
+gen_pal <- qualpal(30, colorspace=list(h=c(0,360), s=c(0.3,1), l=c(0.2,0.8)))
 
-leg <- c("Bathycoccus", "Chaetoceros", "Chrysochromulina", "Chrysophyceae", "Corethron", "Cylindrotheca",
+leg <- c("Bathycoccus", "Chaetoceros", "Chrysochromulina", "Corethron", "Cylindrotheca",
          "Dictyocha", "Ditylum", "Florenciella", "Gephyrocapsa", "Haptolina", "Leptocylindrus", "Micromonas",
-         "Minidiscus", "Odontella", "Other", "Paraphysomonas", "Parmales", "Pedinellales", "Phaeocystis",
-         "Picochlorum", "Plagioselmis", "Prasinodermaceae indet.", "Prymnesiophyceae indet.", "Prymnesium",
-         "Pseudo-nitzschia", "Pterosperma", "Pyramimonas", "Skletonema", "Spumella", "Teleaulax", "Thalassionema",
+         "Minidiscus", "Odontella", "Other", "Parmales", "Pedinellales", "Phaeocystis",
+         "Picochlorum", "Plagioselmis", "Prymnesiophyceae indet.", "Prymnesium",
+         "Pseudo-nitzschia", "Pterosperma", "Pyramimonas", "Skletonema", "Teleaulax", "Thalassionema",
         "Thalassiosira")
 
 ## Plotting
@@ -434,7 +433,7 @@ genus_plot <- ggplot(genus, aes(fill = Genus, x = day, y = Abundance)) +
   bar.theme +
   scale_x_continuous(breaks = seq(0,27,3)) +
   scale_fill_manual(labels = toexpr(leg,
-                                    plain = c('Other', 'Prasinodermaceae indet.', 'Prymnesiophyceae indet.')),
+                                    plain = c('Other', 'Prymnesiophyceae indet.')),
                                     values = gen_pal$hex) +
   theme(legend.text.align = 0)
 
@@ -456,7 +455,6 @@ species <- species %>%
   mutate(Species = recode(Species, "Chaetoceros_lorenzianus_1" = 'Chaetoceros_lorenzianus')) %>%
   mutate(Species = recode(Species, "Chaetoceros_lorenzianus_2" = 'Chaetoceros_lorenzianus')) %>%
   mutate(Species = recode(Species, "Micromonas_commoda_A2" = 'Micromonas_commoda')) %>%
-  mutate(Species = recode(Species, "Prasinodermaceae_X_sp." = 'Prasinodermaceae_indet.')) %>%
   mutate(Species = recode(Species, "Prymnesiophyceae_Clade_B4_X_sp." = 'Prymnesiophyceae_indet.')) %>%
   mutate(Species = recode(Species, "Chrysophyceae_Clade-F_X_sp." = 'Chrysophyceae_indet.')) %>%
   mutate(Species = recode(Species, "Chrysophyceae_Clade-C_X_sp." = 'Chrysophyceae_indet.')) %>%
@@ -467,7 +465,7 @@ species <- species %>%
 species$Species <- gsub('_', ' ', species$Species)
 
 ## Create color palette
-spe_pal <- qualpal(57, colorspace=list(h=c(0,360), s=c(0.3,1), l=c(0.2,0.8)))
+spe_pal <- qualpal(55, colorspace=list(h=c(0,360), s=c(0.3,1), l=c(0.2,0.8)))
 
 ## Plotting
 species_plot <- ggplot(species, aes(fill = Species, x = day, y = Abundance)) +
@@ -509,7 +507,7 @@ ordi_aitch <- ps_exp_raw %>%
 
 ordi_aitch
 
-# Show the same pattern: higher dispersion at 18°C than at the other two temperatures, at which it is comparable
+# Pattern: higher dispersion at 18°C than at the other two temperatures, at which it is comparable
 
 ## Save the simplest version
 ggsave("Output/SpreadReplicates.png", ordi_aitch, dpi = 300, width = 8, height = 4)

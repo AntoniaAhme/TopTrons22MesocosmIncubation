@@ -145,6 +145,7 @@ tax <- filter(tax, tax$Supergroup!="Hacrobia:nucl")
 
 # Create taxonomy file for microzooplankton
 # based on https://doi.org/10.1111/jeu.12691
+tax_chry <- filter(tax, tax$Class=="Chrysophyceae")
 tax <- filter(tax, tax$Supergroup!="Archaeplastida")
 tax <- filter(tax, tax$Division!="Haptophyta")
 tax <- filter(tax, tax$Division!="Ochrophyta")
@@ -157,6 +158,8 @@ tax <- filter(tax, tax$Class!="Chlorarachniophyceae")
 
 unique(tax$Division)
 unique(tax$Class)
+
+tax <- rbind(tax, tax_chry)
 
 # Subset asv tab based on newly selected taxonomy
 asv <- asv[rownames(asv) %in% tax$ASV,]
@@ -261,7 +264,7 @@ class <- class %>%
 colnames(class)[2] <- "Group"
 
 ## Create color palette
-class_pal <- qualpal(24, colorspace=list(h=c(0,360), s=c(0.3,1), l=c(0.2,0.8)))
+class_pal <- qualpal(23, colorspace=list(h=c(0,360), s=c(0.3,1), l=c(0.2,0.8)))
 
 ## Plotting
 class_plot <- ggplot(class, aes(fill = Group, x = day, y = Abundance)) +
