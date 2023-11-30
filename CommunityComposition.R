@@ -273,6 +273,43 @@ shan_time <- ggplot(div_shan, aes(x=day, y=Shannon, color=temp)) +
 shan_time
 ggsave("Output/ShannonOverTime.png", shan_time, height = 5, width = 8, dpi = 320)
 
+# Richness
+# Create summary of data for species richness
+div_rich <- data_summary(div, varname="Richness", 
+                         groupnames=c("day", "temp"))
+
+rich_time <- ggplot(div_rich, aes(x=day, y=Richness, color=temp)) + 
+  geom_point(position=position_dodge(0.05), size = 4)+
+  geom_line(size = 1)+
+  geom_errorbar(aes(ymin=Richness-se, ymax=Richness+se), size=1.1, width=.8,
+                position=position_dodge(0.05)) +
+  plot.theme +
+  scale_x_continuous(breaks = seq(15, 27, 3))+
+  labs(x="Day", y=bquote("Species Richness")) + 
+  scale_color_manual(values=temp_pal)
+
+rich_time
+ggsave("Output/RichnessOverTime.png", rich_time, height = 5, width = 8, dpi = 320)
+
+# Evenness
+# Create summary of data for species evenness
+div_even <- data_summary(div, varname="Evenness", 
+                         groupnames=c("day", "temp"))
+
+even_time <- ggplot(div_even, aes(x=day, y=Evenness, color=temp)) + 
+  geom_point(position=position_dodge(0.05), size = 4)+
+  geom_line(size = 1)+
+  geom_errorbar(aes(ymin=Evenness-se, ymax=Evenness+se), size=1.1, width=.8,
+                position=position_dodge(0.05)) +
+  plot.theme +
+  scale_x_continuous(breaks = seq(15, 27, 3))+
+  labs(x="Day", y=bquote("Species Evenness")) + 
+  scale_color_manual(values=temp_pal)
+
+even_time
+ggsave("Output/EvennessOverTime.png", even_time, height = 5, width = 8, dpi = 320)
+
+
 ### Statistics of diversity metrices
 ### TWO-WAY REPEATED MEASURES ANOVA
 #https://stats.stackexchange.com/questions/181563/analyzing-repeated-measures-experiment-with-multiple-treatment-groups-and-multip
@@ -297,17 +334,7 @@ bxp <- ggboxplot(
   color = "temp", palette = temp_pal)
 bxp
 
-# Outlier
-pan2 %>%
-  group_by(temp, day) %>%
-  identify_outliers(Shannon)
-# these outliers are still fine as they are not extreme
-
 # Check normality
-pan2 %>%
-  group_by(temp, day) %>%
-  shapiro_test(Shannon)
-
 ggqqplot(pan2, "Shannon", ggtheme = theme_bw()) +
   facet_grid(day ~ temp, labeller = "label_both")
 # very few datapoints, but apparently normal
@@ -339,6 +366,63 @@ pwc <- pan2 %>%
   )
 print(pwc, n=30)
 # 6 degree differs between day 15 and 27 as well as between 24 and 27
+
+
+## Richness
+# Check assumptions
+pan2 <- div %>% select(Richness, temp, day, cosm)
+pan2$day <- as.factor(pan2$day)
+
+# Summary
+pan2 %>%
+  group_by(temp, day) %>%
+  get_summary_stats(Richness, type = "mean_sd")
+
+bxp <- ggboxplot(
+  pan2, x = "day", y = "Richness",
+  color = "temp", palette = temp_pal)
+bxp
+
+# Check normality
+ggqqplot(pan2, "Richness", ggtheme = theme_bw()) +
+  facet_grid(day ~ temp, labeller = "label_both")
+# very few datapoints, but apparently normal
+
+# Compute 2-way RM ANOVA
+res.aov <- anova_test(
+  data = pan2, dv = Richness, wid = cosm, 
+  between = temp, within = day)
+res.aov
+# sphericity not violated, only main effect of day -> decrease over time
+
+
+## Evenness
+# Check assumptions
+pan2 <- div %>% select(Evenness, temp, day, cosm)
+pan2$day <- as.factor(pan2$day)
+
+# Summary
+pan2 %>%
+  group_by(temp, day) %>%
+  get_summary_stats(Evenness, type = "mean_sd")
+
+bxp <- ggboxplot(
+  pan2, x = "day", y = "Evenness",
+  color = "temp", palette = temp_pal)
+bxp
+
+# Check normality
+ggqqplot(pan2, "Evenness", ggtheme = theme_bw()) +
+  facet_grid(day ~ temp, labeller = "label_both")
+# very few datapoints, but apparently normal
+
+# Compute 2-way RM ANOVA
+res.aov <- anova_test(
+  data = pan2, dv = Evenness, wid = cosm, 
+  between = temp, within = day)
+res.aov
+# sphericity not violated, effect of time and interaction
+
 
 #### BARGRAPHS ####
 ### Bargraph on class level over time per treatment
@@ -392,14 +476,48 @@ genus <- subset(genus, day > 12)
 
 ## Genera over whole time
 # Create color palette
-gen_pal_all <- qualpal(33, colorspace=list(h=c(0,360), s=c(0.3,1), l=c(0.2,0.8)))
+gen_pal_all <-
+  qualpal(33, colorspace = list(
+    h = c(0, 360),
+    s = c(0.3, 1),
+    l = c(0.2, 0.8)
+  ))
 
-leg_all <- c("Aureococcus", "Bathycoccus", "Brockmanniella", "Chaetoceros", "Chrysochromulina", "Corethron", "Cylindrotheca",
-         "Dictyocha", "Ditylum", "Florenciella", "Gephyrocapsa", "Haptolina", "Leptocylindrus", "Micromonas",
-         "Minidiscus", "Odontella", "Ostreococcus", "Other", "Parmales", "Pedinellales", "Phaeocystis",
-         "Picochlorum", "Plagioselmis", "Prymnesiophyceae indet.", "Prymnesium",
-         "Pseudo-nitzschia", "Pterosperma", "Pyramimonas", "Skletonema", "Teleaulax", "Thalassionema",
-         "Thalassiosira")
+leg_all <-
+  c(
+    "Aureococcus",
+    "Bathycoccus",
+    "Brockmanniella",
+    "Chaetoceros",
+    "Chrysochromulina",
+    "Corethron",
+    "Cylindrotheca",
+    "Dictyocha",
+    "Ditylum",
+    "Florenciella",
+    "Gephyrocapsa",
+    "Haptolina",
+    "Leptocylindrus",
+    "Micromonas",
+    "Minidiscus",
+    "Odontella",
+    "Ostreococcus",
+    "Other",
+    "Parmales",
+    "Pedinellales",
+    "Phaeocystis",
+    "Picochlorum",
+    "Plagioselmis",
+    "Prymnesiophyceae indet.",
+    "Prymnesium",
+    "Pseudo-nitzschia",
+    "Pterosperma",
+    "Pyramimonas",
+    "Skletonema",
+    "Teleaulax",
+    "Thalassionema",
+    "Thalassiosira"
+  )
 
 ## Plotting
 genus_plot_all <- ggplot(genus_all, aes(fill = Genus, x = day, y = Abundance)) +
@@ -597,21 +715,11 @@ bxp <- ggboxplot(
   color = "temp", palette = temp_pal)
 bxp
 
-# Outlier
-pan612 %>%
-  group_by(temp, day) %>%
-  identify_outliers(betadisper)
-# these outliers are still fine as they are not extreme
-
 # exclude day 24 due to too few datapoints
 pan612 <- subset(pan612, day != "24")
 pan612$day <- factor(pan612$day)
 
 # Check normality
-pan612 %>%
-  group_by(temp, day) %>%
-  shapiro_test(betadisper)
-
 ggqqplot(pan612, "betadisper", ggtheme = theme_bw()) +
   facet_grid(day ~ temp, labeller = "label_both")
 # very few datapoints, but apparently normal
@@ -640,21 +748,11 @@ bxp <- ggboxplot(
   color = "temp", palette = temp_pal)
 bxp
 
-# Outlier
-pan618 %>%
-  group_by(temp, day) %>%
-  identify_outliers(betadisper)
-# these outliers are still fine as they are not extreme
-
 # exclude day 24 due to too few datapoints
 pan618 <- subset(pan618, day != "24")
 pan618$day <- factor(pan618$day)
 
 # Check normality
-pan618 %>%
-  group_by(temp, day) %>%
-  shapiro_test(betadisper)
-
 ggqqplot(pan618, "betadisper", ggtheme = theme_bw()) +
   facet_grid(day ~ temp, labeller = "label_both")
 # very few datapoints, but apparently normal

@@ -139,17 +139,7 @@ bxp <- ggboxplot(
   color = "temp", palette = temp_pal)
 bxp
 
-# Outlier
-pan2 %>%
-  group_by(temp, day) %>%
-  identify_outliers(chl_µgL)
-# these outliers are still fine as they are not extreme
-
 # Check normality
-pan2 %>%
-  group_by(temp, day) %>%
-  shapiro_test(chl_µgL)
-
 ggqqplot(pan2, "chl_µgL", ggtheme = theme_bw()) +
   facet_grid(day ~ temp, labeller = "label_both")
 # very few datapoints, but apparently normal
@@ -182,17 +172,7 @@ bxp <- ggboxplot(
   color = "temp", palette = temp_pal)
 bxp
 
-# Outlier
-pan2 %>%
-  group_by(temp, day) %>%
-  identify_outliers(chl_µgL)
-# these outliers are still fine as they are not extreme
-
 # Check normality
-pan2 %>%
-  group_by(temp, day) %>%
-  shapiro_test(chl_µgL)
-
 ggqqplot(pan2, "chl_µgL", ggtheme = theme_bw()) +
   facet_grid(day ~ temp, labeller = "label_both")
 # very few datapoints, but apparently normal
@@ -230,17 +210,7 @@ bxp <- ggboxplot(
   color = "temp", palette = temp_pal)
 bxp
 
-# Outlier
-pan2 %>%
-  group_by(temp, day) %>%
-  identify_outliers(µgL_c)
-# these outliers are still fine as they are not extreme
-
 # Check normality
-pan2 %>%
-  group_by(temp, day) %>%
-  shapiro_test(µgL_c)
-
 ggqqplot(pan2, "µgL_c", ggtheme = theme_bw()) +
   facet_grid(day ~ temp, labeller = "label_both")
 # very few datapoints, but apparently normal
@@ -286,17 +256,7 @@ bxp <- ggboxplot(
   color = "temp", palette = temp_pal)
 bxp
 
-# Outlier
-pan2 %>%
-  group_by(temp, day) %>%
-  identify_outliers(o2_poc)
-# no outliers
-
 # Check normality
-pan2 %>%
-  group_by(temp, day) %>%
-  shapiro_test(o2_poc)
-
 ggqqplot(pan2, "o2_poc", ggtheme = theme_bw()) +
   facet_grid(day ~ temp, labeller = "label_both")
 # very few datapoints, but looks all right
@@ -345,17 +305,7 @@ bxp <- ggboxplot(
   color = "temp", palette = temp_pal)
 bxp
 
-# Outlier
-pan2 %>%
-  group_by(temp, day) %>%
-  identify_outliers(cn)
-# these outliers are still fine as they are not extreme
-
 # Check normality
-pan2 %>%
-  group_by(temp, day) %>%
-  shapiro_test(cn)
-
 ggqqplot(pan2, "cn", ggtheme = theme_bw()) +
   facet_grid(day ~ temp, labeller = "label_both")
 # very few datapoints, but apparently normal
@@ -409,17 +359,7 @@ bxp <- ggboxplot(
   color = "temp", palette = temp_pal)
 bxp
 
-# Outlier
-pan2 %>%
-  group_by(temp, day) %>%
-  identify_outliers(cp)
-# these outliers are still fine as they are not extreme
-
 # Check normality
-pan2 %>%
-  group_by(temp, day) %>%
-  shapiro_test(cp)
-
 ggqqplot(pan2, "cp", ggtheme = theme_bw()) +
   facet_grid(day ~ temp, labeller = "label_both")
 # very few datapoints, but apparently normal
