@@ -55,6 +55,8 @@ plot.theme <- theme(panel.background = element_blank(),
 # Color palettes
 temp_pal <- c("skyblue2", "goldenrod2", "tomato2")
 temp_pal2 <- c("lightskyblue1", "gold", "salmon1")
+#temp_pal <- c("6"="darkorange", "12"="blue", "18"="turquoise3") # inverted for presentation
+
 uni_pal <- c("gold", "gold", "gold", "gold", "gold", "salmon1", "salmon1",
              "salmon1",  "salmon1", "salmon1", "lightskyblue1", "lightskyblue1",
               "lightskyblue1", "lightskyblue1", "lightskyblue1")
@@ -67,14 +69,12 @@ toexpr <- function(x, plain = NULL) {
   as.expression(unname(Map(function(f,v) substitute(f(v), list(f=as.name(f), v=as.character(v))), getfun(x), x)))
 }
 
-# Standard error and mean function
-se <- function(x, ...) sqrt(var(x, ...)/length(x))
-
+# Summary function
 data_summary <- function(data, varname, groupnames){
   require(plyr)
   summary_func <- function(x, col){
     c(mean = mean(x[[col]], na.rm=TRUE),
-      se = se(x[[col]], na.rm=TRUE))
+      sd = sd(x[[col]], na.rm=TRUE))
   }
   data_sum<-ddply(data, groupnames, .fun=summary_func,
                   varname)
@@ -201,7 +201,7 @@ samples = sample_data(sam)
 ps_raw <- phyloseq(OTU, TAX, samples)
 
 # Check rarefaction curve for justifying sampling depths
-rarecurve(t(otu_table(ps_raw)), step=50, cex=0.5) # looks fine
+#rarecurve(t(otu_table(ps_raw)), step=50, cex=0.5) # looks fine
 # save manually in RSTudio
 
 ## Scaling with ranked subsampling (srs)
@@ -245,7 +245,7 @@ OTU = otu_table(asv.clr, taxa_are_rows = TRUE)
 # Create a phyloseq object
 ps_clr <- phyloseq(OTU, TAX, SAM)
 
-#### CALCULATE & PLOT DIVERSITY ####
+#### CALCULATE & PLOT DIVERSITY & STATISTICS ####
 ps.rich <- microbial::richness(ps,  method = c("Observed", "Evenness", "Shannon"))
 
 # Add diversity measures to sample tab
@@ -263,15 +263,15 @@ div_shan <- data_summary(div, varname="Shannon",
 shan_time <- ggplot(div_shan, aes(x=day, y=Shannon, color=temp)) + 
   geom_point(position=position_dodge(0.05), size = 4)+
   geom_line(size = 1)+
-  geom_errorbar(aes(ymin=Shannon-se, ymax=Shannon+se), size=1.1, width=.8,
+  geom_errorbar(aes(ymin=Shannon-sd, ymax=Shannon+sd), size=1.1, width=.8,
                 position=position_dodge(0.05)) +
   plot.theme +
-  labs(x="Incubation day", y=bquote("Shannon index")) + 
+  labs(x="Incubation time (d)", y=bquote("Shannon index")) + 
   scale_x_continuous(breaks = seq(15, 27, 3))+
   scale_color_manual(values=temp_pal)
 
 shan_time
-ggsave("Output/ShannonOverTime.png", shan_time, height = 5, width = 8, dpi = 320)
+ggsave("Output/ShannonOverTime.png", shan_time, height = 4, width = 9, dpi = 320)
 
 # Richness
 # Create summary of data for species richness
@@ -281,15 +281,15 @@ div_rich <- data_summary(div, varname="Richness",
 rich_time <- ggplot(div_rich, aes(x=day, y=Richness, color=temp)) + 
   geom_point(position=position_dodge(0.05), size = 4)+
   geom_line(size = 1)+
-  geom_errorbar(aes(ymin=Richness-se, ymax=Richness+se), size=1.1, width=.8,
+  geom_errorbar(aes(ymin=Richness-sd, ymax=Richness+sd), size=1.1, width=.8,
                 position=position_dodge(0.05)) +
   plot.theme +
   scale_x_continuous(breaks = seq(15, 27, 3))+
-  labs(x="Day", y=bquote("Species Richness")) + 
+  labs(x="Incubation time (d)", y=bquote("Species richness")) + 
   scale_color_manual(values=temp_pal)
 
 rich_time
-ggsave("Output/RichnessOverTime.png", rich_time, height = 5, width = 8, dpi = 320)
+ggsave("Output/RichnessOverTime.png", rich_time, height = 4, width = 9, dpi = 320)
 
 # Evenness
 # Create summary of data for species evenness
@@ -299,15 +299,15 @@ div_even <- data_summary(div, varname="Evenness",
 even_time <- ggplot(div_even, aes(x=day, y=Evenness, color=temp)) + 
   geom_point(position=position_dodge(0.05), size = 4)+
   geom_line(size = 1)+
-  geom_errorbar(aes(ymin=Evenness-se, ymax=Evenness+se), size=1.1, width=.8,
+  geom_errorbar(aes(ymin=Evenness-sd, ymax=Evenness+sd), size=1.1, width=.8,
                 position=position_dodge(0.05)) +
   plot.theme +
   scale_x_continuous(breaks = seq(15, 27, 3))+
-  labs(x="Day", y=bquote("Species Evenness")) + 
+  labs(x="Incubation time (d)", y=bquote("Species evenness")) + 
   scale_color_manual(values=temp_pal)
 
 even_time
-ggsave("Output/EvennessOverTime.png", even_time, height = 5, width = 8, dpi = 320)
+ggsave("Output/EvennessOverTime.png", even_time, height = 4, width = 9, dpi = 320)
 
 
 ### Statistics of diversity metrices
@@ -315,6 +315,16 @@ ggsave("Output/EvennessOverTime.png", even_time, height = 5, width = 8, dpi = 32
 #https://stats.stackexchange.com/questions/181563/analyzing-repeated-measures-experiment-with-multiple-treatment-groups-and-multip
 #https://www.datanovia.com/en/lessons/repeated-measures-anova-in-r/#two-way-repeated-measures-anova
 #https://www.r-bloggers.com/2021/04/repeated-measures-of-anova-in-r-complete-tutorial/
+
+## Create a table for statistical outout of two-way RM anova
+Parameter <- rep(c("Shannon", "Richness", "Evenness"), each=3)
+Effect <- rep(c("Temperature","Time","Temperature:Time"), times=3)
+stat <- data.frame(Parameter, Effect)
+stat['DFn'] <- NA
+stat['DFd'] <- NA
+stat['F'] <- NA
+stat['P'] <- NA
+
 
 # Exclude groups with too few datapoints
 div <- subset(div, day != "24")
@@ -345,6 +355,10 @@ res.aov <- anova_test(
   between = temp, within = day)
 res.aov
 # sphericity not violated
+
+# add main results to stat table
+res.aov_sh <- get_anova_table(res.aov)
+stat[1:3,3:6] <- res.aov_sh[,2:5]
 
 # Considering a significant interaction
 # main effect of day
@@ -395,6 +409,10 @@ res.aov <- anova_test(
 res.aov
 # sphericity not violated, only main effect of day -> decrease over time
 
+# add main results to stat table
+res.aov_ri <- get_anova_table(res.aov)
+stat[4:6,3:6] <- res.aov_ri[,2:5]
+
 
 ## Evenness
 # Check assumptions
@@ -423,6 +441,11 @@ res.aov <- anova_test(
 res.aov
 # sphericity not violated, effect of time and interaction
 
+# add main results to stat table
+res.aov_ev <- get_anova_table(res.aov)
+stat[7:9,3:6] <- res.aov_ev[,2:5]
+
+writexl::write_xlsx(stat, "Data/StatisticsDiversity.xlsx")
 
 #### BARGRAPHS ####
 ### Bargraph on class level over time per treatment
@@ -513,7 +536,7 @@ leg_all <-
     "Pseudo-nitzschia",
     "Pterosperma",
     "Pyramimonas",
-    "Skletonema",
+    "Skeletonema",
     "Teleaulax",
     "Thalassionema",
     "Thalassiosira"
@@ -541,7 +564,7 @@ leg <- c("Bathycoccus", "Chaetoceros", "Chrysochromulina", "Corethron", "Cylindr
          "Dictyocha", "Ditylum", "Florenciella", "Gephyrocapsa", "Haptolina", "Leptocylindrus", "Micromonas",
          "Minidiscus", "Odontella", "Other", "Parmales", "Pedinellales", "Phaeocystis",
          "Picochlorum", "Plagioselmis", "Prymnesiophyceae indet.", "Prymnesium",
-         "Pseudo-nitzschia", "Pterosperma", "Pyramimonas", "Skletonema", "Teleaulax", "Thalassionema",
+         "Pseudo-nitzschia", "Pterosperma", "Pyramimonas", "Skeletonema", "Teleaulax", "Thalassionema",
         "Thalassiosira")
 
 ## Plotting

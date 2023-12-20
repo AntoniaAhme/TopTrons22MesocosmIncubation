@@ -38,13 +38,11 @@ plot.theme <- theme(panel.background = element_blank(),
 temp_pal <- c("6"="skyblue2", "12"="goldenrod2", "18"="tomato2")
 
 # CV summary function
-se <- function(x, ...) sqrt(var(x, ...)/length(x))
-
 data_summary <- function(data, varname, groupnames){
   require(plyr)
   summary_func <- function(x, col){
     c(mean = mean(x[[col]], na.rm=TRUE),
-      se = se(x[[col]], na.rm=TRUE))
+      sd = sd(x[[col]], na.rm=TRUE))
   }
   data_sum<-ddply(data, groupnames, .fun=summary_func,
                   varname)
@@ -65,7 +63,7 @@ gra_sum <- data_summary(gra, varname="m_d",
 #### PLOT 1: GRAZING RATES ####
 gra_plot <- ggplot(gra_sum, aes(x=Day, y=m_d, color = Temperature, group=Temperature)) + 
   geom_point(position=position_dodge(2), size = 3)+
-  geom_errorbar(aes(ymin=m_d-se, ymax=m_d+se), size=1.1, width=1.25,
+  geom_errorbar(aes(ymin=m_d-sd, ymax=m_d+sd), size=1.1, width=1.25,
                 position=position_dodge(2)) +
   theme_classic() + theme(axis.line = element_blank(), 
                           text = element_text(size = 16, color="black"), 
@@ -73,7 +71,7 @@ gra_plot <- ggplot(gra_sum, aes(x=Day, y=m_d, color = Temperature, group=Tempera
                           axis.text.y = element_text(face="plain", color="black", size=16),
                           panel.background = element_rect(colour = "black", size=1),
                           legend.position="none") +
-  labs(x="Incubation day", y=bquote("m (d^-1)")) + 
+  labs(x="Incubation time (d)", y=bquote('m' ~ '(' ~ d ^ -1 ~ ')')) + 
   scale_x_continuous(breaks = seq(15, 27, 12))+
   scale_color_manual(values=c("6" = "skyblue2", "12" = "goldenrod1" , "18" = "tomato2"))
 
@@ -102,21 +100,6 @@ bxp <- ggboxplot(
   pan2, x = "Day", y = "m_d",
   color = "Temperature", palette = temp_pal)
 bxp
-
-# Outlier
-pan2 %>%
-  group_by(Temperature, Day) %>%
-  identify_outliers(m_d)
-# these outliers are still fine as they are not extreme
-
-# Check normality
-pan2 %>%
-  group_by(Temperature, Day) %>%
-  shapiro_test(m_d)
-
-ggqqplot(pan2, "m_d", ggtheme = theme_bw()) +
-  facet_grid(Day ~ Temperature, labeller = "label_both")
-# very few datapoints, but apparently normal
 
 # Compute 2-way RM ANOVA
 res.aov <- anova_test(

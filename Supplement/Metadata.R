@@ -18,14 +18,12 @@ library(ggpmisc)
 library(ggplot2)
 
 #### FUNCTIONS ####
-# Functions for the data summary we to prepare data for graphs with mean and standard error
-se <- function(x, ...) sqrt(var(x, ...)/length(x))
-
+# Functions for the data summary we to prepare data for graphs with mean and standard dev
 data_summary <- function(data, varname, groupnames){
   require(plyr)
   summary_func <- function(x, col){
     c(mean = mean(x[[col]], na.rm=TRUE),
-      se = se(x[[col]], na.rm=TRUE))
+      sd = sd(x[[col]], na.rm=TRUE))
   }
   data_sum<-ddply(data, groupnames, .fun=summary_func,
                   varname)
@@ -64,7 +62,7 @@ sal_psu <- data_summary(meta, varname="sal_PSU",
 p1 <- ggplot(temp_deg, aes(x=day, y=temp_DEG, color=temp, group=temp)) + 
   geom_point(position=position_dodge(0.05), size = 3)+
   geom_line(size = 1)+
-  geom_errorbar(aes(ymin=temp_DEG-se, ymax=temp_DEG+se), size=1.1, width=.1,
+  geom_errorbar(aes(ymin=temp_DEG-sd, ymax=temp_DEG+sd), size=1.1, width=.1,
                 position=position_dodge(0.05)) +
   plot.theme+
   labs(color = "Temperature (°C)") +
@@ -81,7 +79,7 @@ ggsave("Output/Temperature.png", p1, dpi = 300, width = 8, height = 4)
 p2 <- ggplot(sal_psu, aes(x=day, y=sal_PSU, color=temp, group=temp)) + 
   geom_point(position=position_dodge(0.05), size = 3)+
   geom_line(size = 1)+
-  geom_errorbar(aes(ymin=sal_PSU-se, ymax=sal_PSU+se), size=1.1, width=.1,
+  geom_errorbar(aes(ymin=sal_PSU-sd, ymax=sal_PSU+sd), size=1.1, width=.1,
                 position=position_dodge(0.05)) +
   theme_classic() + theme(axis.line = element_blank(), 
                           text = element_text(size = 16, color="black"), 

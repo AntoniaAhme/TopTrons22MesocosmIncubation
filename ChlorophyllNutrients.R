@@ -1,4 +1,4 @@
-### TOPTRONS ECOSYSTEM FUNCTIONS ###
+### TOPTRONS CHLOROPHYLL NUTRIENTS ###
 ## Antonia Ahme, 14.11.2023 ##
 
 #### HOUSEKEEPING ####
@@ -83,98 +83,95 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 
 # Color palette
 temp_pal <- c("6"="skyblue2", "12"="goldenrod2", "18"="tomato2")
-#temp_pal <- c("6"="darkorange", "12"="blue", "18"="turquoise3") # inverted for presentation
-temp_pal2 <- c("lightskyblue1", "gold", "salmon1")
-
 
 #### UPLOAD AND TIDY UP DATA ####
-pan <- readxl::read_excel("Data/ParticulateNutrients.xlsx")
-pan$temp <- as.factor(pan$temp)
-pan_all <- pan
-pan <- subset(pan, day > 12)
-pan612 <- subset(pan, temp != "18")
-pan618 <- subset(pan, temp != "12")
+chl <- readxl::read_excel("Data/Chlorophyll.xlsx")
+chl$temp <- as.factor(chl$temp)
+chl <- subset(chl, day > 12)
+chl_full <- chl
 
-oxy <- readxl::read_excel("Data/GOP.xlsx")
-oxy$temp <- as.factor(oxy$temp)
-oxy_all <- oxy
-oxy <- subset(oxy, day > 12)
-oxy2 <- oxy
-oxy$temp <- factor(oxy$temp, levels = c("6", "12", "18"))
-oxy612 <- subset(oxy, temp != "18")
-oxy618 <- subset(oxy, temp != "12")
+din <- readxl::read_excel("Data/DissolvedNutrients.xlsx")
+din$temp <- as.factor(din$temp)
+din <- subset(din, day > 12)
+din_full <- din
 
-#### PLOTTING: ECOSYSTEM FUNCTIONS ####
-# Biomass
-poc <- data_summary(pan, varname="µgL_c", 
+dis <- readxl::read_excel("Data/DissolvedSilicate.xlsx")
+dis$temp <- as.factor(dis$temp)
+dis <- subset(dis, day > 12)
+dis_full <- dis
+
+#### PLOTTING ####
+# Chlorophyll
+chl <- data_summary(chl, varname="chl_µgL", 
                     groupnames=c("temp","day"))
 
-p1 <- ggplot(poc, aes(x=day, y=µgL_c, color=temp, group=temp)) + 
+p1 <- ggplot(chl, aes(x=day, y=chl_µgL, color=temp, group=temp)) + 
   geom_point(position=position_dodge(0.5), size = 4)+
   geom_line(position=position_dodge(0.5), size = 1)+
-  geom_errorbar(aes(ymin=µgL_c-sd, ymax=µgL_c+sd), size=1.1, width=.8,
+  geom_errorbar(aes(ymin=chl_µgL-sd, ymax=chl_µgL+sd), size=1.1, width=.8,
                 position=position_dodge(0.5)) +
   plot.theme +
-  labs(x=bquote('Incubation time (d)'), y=bquote('POC' ~ '(' ~ 'µg L' ^ -1 ~ ')')) +
+  labs(x=bquote('Incubation time (d)'), y=bquote('Chlorophyll' ~ '(' ~ 'µg L' ^ -1 ~ ')')) +
   scale_x_continuous(breaks = seq(0, 27, 3))+
-  scale_y_continuous(breaks = seq(0, 4000, 500))+
+  scale_y_continuous(breaks = seq(0, 16, 2))+
   scale_color_manual(values=temp_pal)
 
 p1
 
-# GOP
-gop <- data_summary(oxy, varname="o2_poc", 
+# Nitrate
+din <- data_summary(din_full, varname="no_µmolL", 
                     groupnames=c("temp","day"))
 
-p2 <- ggplot(gop, aes(x=day, y=o2_poc, color=temp, group=temp,day)) + 
+p2 <- ggplot(din, aes(x=day, y=no_µmolL, color=temp, group=temp)) + 
   geom_point(position=position_dodge(0.5), size = 4)+
   geom_line(position=position_dodge(0.5), size = 1)+
-  geom_errorbar(aes(ymin=o2_poc-sd, ymax=o2_poc+sd), size=1.1, width=.8,
+  geom_errorbar(aes(ymin=no_µmolL-sd, ymax=no_µmolL+sd), size=1.1, width=.8,
                 position=position_dodge(0.5)) +
   plot.theme +
-  labs(x=bquote('Incubation time (d)'), y=bquote('GOP' ~ '(' ~ 'µmol O' [2] ~ 'mg POC' ^ -1 ~ 'd' ^-1 ~ ')')) +
+  labs(x=bquote('Incubation time (d)'), y=bquote('Nitrate' ~ '(' ~ 'µmol L' ^ -1 ~ ')')) +
   scale_x_continuous(breaks = seq(0, 27, 3))+
-  scale_y_continuous(breaks = seq(0, 30, 5))+
+  scale_y_continuous(breaks = seq(0, 20, 5))+
   scale_color_manual(values=temp_pal)
 
 p2
 
-# C:N ratio
-c_n <- data_summary(pan, varname="cn", 
+
+# Phosphate
+dip <- data_summary(din_full, varname="po_µmolL", 
                     groupnames=c("temp","day"))
 
-p3 <- ggplot(c_n, aes(x=day, y=cn, color=temp, group=temp)) + 
+p3 <- ggplot(dip, aes(x=day, y=po_µmolL, color=temp, group=temp)) + 
   geom_point(position=position_dodge(0.5), size = 4)+
   geom_line(position=position_dodge(0.5), size = 1)+
-  geom_errorbar(aes(ymin=cn-sd, ymax=cn+sd), size=1.1, width=.8,
+  geom_errorbar(aes(ymin=po_µmolL-sd, ymax=po_µmolL+sd), size=1.1, width=.8,
                 position=position_dodge(0.5)) +
   plot.theme +
-  labs(x="Incubation time (d)", y=bquote('C:N ratio')) +
+  labs(x=bquote('Incubation time (d)'), y=bquote('Phospate' ~ '(' ~ 'µmol L' ^ -1 ~ ')')) +
   scale_x_continuous(breaks = seq(0, 27, 3))+
-  scale_y_continuous(breaks = seq(0, 45, 5))+
+  scale_y_continuous(breaks = seq(0, 0.3, 0.05))+
   scale_color_manual(values=temp_pal)
 
 p3
 
-# C:P ratio
-c_p <- data_summary(pan, varname="cp", 
+# Phosphate
+dis <- data_summary(dis, varname="si_µM", 
                     groupnames=c("temp","day"))
 
-p4 <- ggplot(c_p, aes(x=day, y=cp, color=temp, group=temp)) + 
+p4 <- ggplot(dis, aes(x=day, y=si_µM, color=temp, group=temp)) + 
   geom_point(position=position_dodge(0.5), size = 4)+
   geom_line(position=position_dodge(0.5), size = 1)+
-  geom_errorbar(aes(ymin=cp-sd, ymax=cp+sd), size=1.1, width=.8,
+  geom_errorbar(aes(ymin=si_µM-sd, ymax=si_µM+sd), size=1.1, width=.8,
                 position=position_dodge(0.5)) +
   plot.theme +
-  labs(x="Incubation time (d)", y=bquote('C:P ratio')) +
+  labs(x=bquote('Incubation time (d)'), y=bquote('Silicate' ~ '(' ~ 'µmol L' ^ -1 ~ ')')) +
   scale_x_continuous(breaks = seq(0, 27, 3))+
-  scale_y_continuous(breaks = seq(0, 1000, 200))+
+  scale_y_continuous(breaks = seq(0, 20, 2))+
   scale_color_manual(values=temp_pal)
 
 p4
 
 # Export graphs as high resolution png file
-png("Output/EcosystemFunctions.png", 5000, 4000, res = 400, type='cairo')
+png("Output/ChlorophyllNutrients.png", 5000, 4000, res = 400, type='cairo')
 multiplot(p1, p2, p3, p4, cols=2)
 dev.off()
 
@@ -184,9 +181,8 @@ dev.off()
 #https://www.datanovia.com/en/lessons/repeated-measures-anova-in-r/#two-way-repeated-measures-anova
 #https://www.r-bloggers.com/2021/04/repeated-measures-of-anova-in-r-complete-tutorial/
 
-### Ecosystem functions
 ## Create a table for statistical outout of two-way RM anova
-Parameter <- rep(c("Biomass", "GOP", "C:N", "C:P"), each=3)
+Parameter <- rep(c("Chlorophyll", "Nitrate", "Phosphate", "Silicate"), each=3)
 Effect <- rep(c("Temperature","Time","Temperature:Time"), times=4)
 stat <- data.frame(Parameter, Effect)
 stat['DFn'] <- NA
@@ -194,214 +190,184 @@ stat['DFd'] <- NA
 stat['F'] <- NA
 stat['P'] <- NA
 
-## Biomass
+## Chlorophyll
 # Check assumptions
-pan2 <- pan %>% select(µgL_c, temp, day, plankto_ID)
+pan2 <- chl_full %>% select(chl_µgL, temp, day, plankto_ID)
 pan2$day <- as.factor(pan2$day)
+#pan2 <- subset(pan2, temp != "6")
 
 # Summary
 pan2 %>%
   group_by(temp, day) %>%
-  get_summary_stats(µgL_c, type = "mean_sd")
+  get_summary_stats(chl_µgL, type = "mean_sd")
 
 bxp <- ggboxplot(
-  pan2, x = "day", y = "µgL_c",
+  pan2, x = "day", y = "chl_µgL",
   color = "temp", palette = temp_pal)
 bxp
 
 # Check normality
-ggqqplot(pan2, "µgL_c", ggtheme = theme_bw()) +
+ggqqplot(pan2, "chl_µgL", ggtheme = theme_bw()) +
   facet_grid(day ~ temp, labeller = "label_both")
 # very few datapoints, but apparently normal
 
 # Compute 2-way RM ANOVA
 res.aov <- anova_test(
-  data = pan2, dv = µgL_c, wid = plankto_ID, 
+  data = pan2, dv = chl_µgL, wid = plankto_ID, 
   between = temp, within = day)
 res.aov
-# sphericity not violated
+# significant temp effect and without 6 significant time effect
 
-res.aov_bm <- get_anova_table(res.aov)
+res.aov_chl <- get_anova_table(res.aov)
 # no significant interaction + significant effects of day and temp
 
 # add main results to stat table
-stat[1:3,3:6] <- res.aov_bm[,2:5]
+stat[1:3,3:6] <- res.aov_chl[,2:5]
 
-# Considering no significant interaction
-# comparisons for treatment variable
-pan2 %>%
-  pairwise_t_test(
-    µgL_c ~ temp, paired = FALSE, 
-    p.adjust.method = "bonferroni")
-
-# comparisons for time variable
-pan2 %>%
-  pairwise_t_test(
-    µgL_c ~ day, paired = TRUE, 
-    p.adjust.method = "bonferroni")
-
-## Oxygen - GOP
+## Nitrate
 # Check assumptions
-pan2 <- oxy2 %>% select(o2_poc, temp, day, plankto_ID)
+pan2 <- din_full %>% select(no_µmolL, temp, day, plankto_ID)
 pan2$day <- as.factor(pan2$day)
 
 # Summary
 pan2 %>%
   group_by(temp, day) %>%
-  get_summary_stats(o2_poc, type = "mean_sd")
+  get_summary_stats(no_µmolL, type = "mean_sd")
 
 bxp <- ggboxplot(
-  pan2, x = "day", y = "o2_poc",
+  pan2, x = "day", y = "no_µmolL",
   color = "temp", palette = temp_pal)
 bxp
 
 # Check normality
-ggqqplot(pan2, "o2_poc", ggtheme = theme_bw()) +
+ggqqplot(pan2, "no_µmolL", ggtheme = theme_bw()) +
+  facet_grid(day ~ temp, labeller = "label_both")
+# very few datapoints, but apparently normal
+
+# Compute 2-way RM ANOVA
+res.aov <- anova_test(
+  data = pan2, dv = no_µmolL, wid = plankto_ID, 
+  between = temp, within = day)
+res.aov
+# sphericity violated
+
+res.aov_din <- get_anova_table(res.aov)
+# no significant interaction + significant effects of day
+
+# add main results to stat table
+stat[4:6,3:6] <- res.aov_din[,2:5]
+
+## Phosphate
+# Check assumptions
+pan2 <- din_full %>% select(po_µmolL, temp, day, plankto_ID)
+pan2$day <- as.factor(pan2$day)
+
+# Summary
+pan2 %>%
+  group_by(temp, day) %>%
+  get_summary_stats(po_µmolL, type = "mean_sd")
+
+bxp <- ggboxplot(
+  pan2, x = "day", y = "po_µmolL",
+  color = "temp", palette = temp_pal)
+bxp
+
+# Check normality
+ggqqplot(pan2, "po_µmolL", ggtheme = theme_bw()) +
   facet_grid(day ~ temp, labeller = "label_both")
 # very few datapoints, but looks all right
 
 # Compute 2-way RM ANOVA
 res.aov <- anova_test(
-  data = pan2, dv = o2_poc, wid = plankto_ID, 
+  data = pan2, dv = po_µmolL, wid = plankto_ID, 
   between = temp, within = day)
 res.aov
 # assumption of sphericity not met - GG correction applied
 
-res.aov_gpp <- get_anova_table(res.aov)
-# no significant interaction + significant effects of day and temp
+res.aov_dip <- get_anova_table(res.aov)
+# no significant interaction + significant effects of day
 
 # add main results to stat table
-stat[4:6,3:6] <- res.aov_gpp[,2:5]
+stat[7:9,3:6] <- res.aov_dip[,2:5]
 
 # Considering no significant interaction
-# comparisons for treatment variable
-pan2 %>%
-  pairwise_t_test(
-    o2_poc ~ temp, paired = FALSE, 
-    p.adjust.method = "bonferroni")
-# significant between 6 degree and both other temps
-
 # comparisons for time variable
 pan2 %>%
   pairwise_t_test(
-    o2_poc ~ day, paired = TRUE, 
+    po_µmolL ~ day, paired = TRUE, 
     p.adjust.method = "bonferroni")
-# significant between day 21 and day 27
 
-
-## C:N ratio
+## Silicate
 # Check assumptions
-pan2 <- pan %>% select(cn, temp, day, plankto_ID)
+pan2 <- dis_full %>% select(si_µM, temp, day, plankto_ID)
 pan2$day <- as.factor(pan2$day)
 
 # Summary
 pan2 %>%
   group_by(temp, day) %>%
-  get_summary_stats(cn, type = "mean_sd")
+  get_summary_stats(si_µM, type = "mean_sd")
 
 bxp <- ggboxplot(
-  pan2, x = "day", y = "cn",
+  pan2, x = "day", y = "si_µM",
   color = "temp", palette = temp_pal)
 bxp
 
 # Check normality
-ggqqplot(pan2, "cn", ggtheme = theme_bw()) +
+ggqqplot(pan2, "si_µM", ggtheme = theme_bw()) +
   facet_grid(day ~ temp, labeller = "label_both")
 # very few datapoints, but apparently normal
 
 # Compute 2-way RM ANOVA
 res.aov <- anova_test(
-  data = pan2, dv = cn, wid = plankto_ID, 
+  data = pan2, dv = si_µM, wid = plankto_ID, 
   between = temp, within = day)
 res.aov
 # sphericity not violated
 
-res.aov_cn <- get_anova_table(res.aov)
-# significant interaction + significant effects of day
+res.aov_si <- get_anova_table(res.aov)
+# significant interaction + significant effects of day and temp
 
 # add main results to stat table
-stat[7:9,3:6] <- res.aov_cn[,2:5]
+stat[10:12,3:6] <- res.aov_si[,2:5]
 
 # Considering a significant interaction
-# main effect of day
+# main effect of temp
 one.way <- pan2 %>%
-  group_by(temp) %>%
-  anova_test(dv = cn, wid = plankto_ID, within = day) %>%
+  group_by(day) %>%
+  anova_test(dv = si_µM, wid = plankto_ID, between = temp) %>%
   get_anova_table() %>%
   adjust_pvalue(method = "bonferroni")
 one.way
-# there is a significant main effect within 12 degree
+# there is a significant main effect for temp on days 20-28
+# thus perform pairwise comparisons
+
+# pairwise comparisons
+pwc <- pan2 %>%
+  group_by(day) %>%
+  pairwise_t_test(
+    si_µM ~ temp, paired = FALSE,
+    p.adjust.method = "bonferroni"
+  )
+print(pwc, n=30)
+
+# main effect of day
+one.way <- pan2 %>%
+  group_by(temp) %>%
+  anova_test(dv = si_µM, wid = plankto_ID, within = day) %>%
+  get_anova_table() %>%
+  adjust_pvalue(method = "bonferroni")
+one.way
+# 
 # thus perform pairwise comparisons
 
 # pairwise comparisons
 pwc <- pan2 %>%
   group_by(temp) %>%
   pairwise_t_test(
-    cn ~ day, paired = TRUE,
+    si_µM ~ day, paired = TRUE,
     p.adjust.method = "bonferroni"
   )
 print(pwc, n=30)
-# 6 degree differs between day 15 and 27 as well as between 24 and 27
 
-## C:P ratio
-# Check assumptions
-pan2 <- pan %>% select(cp, temp, day, plankto_ID)
-pan2$day <- as.factor(pan2$day)
-
-# Summary
-pan2 %>%
-  group_by(temp, day) %>%
-  get_summary_stats(cp, type = "mean_sd")
-
-bxp <- ggboxplot(
-  pan2, x = "day", y = "cp",
-  color = "temp", palette = temp_pal)
-bxp
-
-# Check normality
-ggqqplot(pan2, "cp", ggtheme = theme_bw()) +
-  facet_grid(day ~ temp, labeller = "label_both")
-# very few datapoints, but apparently normal
-
-# Compute 2-way RM ANOVA
-res.aov <- anova_test(
-  data = pan2, dv = cp, wid = plankto_ID, 
-  between = temp, within = day)
-res.aov
-# sphericity not violated
-
-res.aov_cp <- get_anova_table(res.aov)
-# significant interaction + significant effects of day
-
-# add main results to stat table
-stat[10:12,3:6] <- res.aov_cp[,2:5]
-
-# Considering a significant interaction
-# main effect of day
-one.way <- pan2 %>%
-  group_by(temp) %>%
-  anova_test(dv = cp, wid = plankto_ID, within = day) %>%
-  get_anova_table() %>%
-  adjust_pvalue(method = "bonferroni")
-one.way
-# there is a significant main effect within all temperatures
-# thus perform pairwise comparisons
-
-# pairwise comparisons
-pwc <- pan2 %>%
-  group_by(temp) %>%
-  pairwise_t_test(
-    cp ~ day, paired = TRUE,
-    p.adjust.method = "bonferroni"
-  )
-print(pwc, n=30)
-# 12 degree differs between day 21 and 24 as well as between 24 and 27
-# 18 degree differs between day 15 +18/21
-
-write_xlsx(stat, "Data/StatisticsEcoFunctions.xlsx")
-
-#### PACKAGES ####
-## Check which packages you actually used for documentation and tidying purposes
-require(NCmisc)
-packages <- list.functions.in.file("~/AWI/RProjects/SOT22/EcosystemFunctions.R", alphabetic = TRUE) # set to your file path
-summary(packages)
+## Save main results from rmANOVA
+write_xlsx(stat, "Data/StatisticsChlNut.xlsx")

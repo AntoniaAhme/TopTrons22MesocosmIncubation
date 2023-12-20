@@ -100,27 +100,7 @@ pH <- readxl::read_excel("Data/MetaNoOut.xlsx")
 pH$temp <- as.factor(pH$temp)
 
 
-#### PLOT 1: CHLOROPHYLL A ####
-# CV over time
-chl <- ggplot(pan, aes(day, chl_µgL, col=plankto_ID)) + 
-  geom_point(size = 3) + 
-  geom_line(size = 0.75) +
-  geom_label_repel(data = filter(pan, day == 27), 
-                   aes(label = rep),
-                   nudge_x = .75,
-                   na.rm = TRUE) +
-  plot.theme + theme(legend.position = "none",
-                     axis.title.x = element_text(),
-                     axis.title.y = element_text()) +
-  labs(x="Incubation time (d)", y=bquote("Chlorophyll a (µg/L)")) +
-  scale_color_manual(values=temp_pal) +
-  scale_x_continuous(breaks = seq(3,30,3))
-
-chl
-
-ggsave("Output/ChlorophyllReps.png", chl, dpi = 300, width = 8, height = 4)
-
-#### PLOT 2: ECOSYSTEM FUNCTIONS ####
+#### PLOT: ECOSYSTEM FUNCTIONS ####
 # POC
 p1 <- ggplot(pan, aes(day, µgL_c, col=plankto_ID)) + 
   geom_point(size = 3) + 
@@ -194,7 +174,7 @@ png("Output/EcosystemFunctionsReps.png", 4000, 4000, res = 400, type='cairo')
 multiplot(p1, p2, p3, p4, cols=1)
 dev.off()
 
-#### PLOT 3: DISSOLVED NUTRIENTS ####
+#### PLOT: DISSOLVED NUTRIENTS ####
 # Nitrate + nitrite
 p1 <- ggplot(din, aes(day, no_µmolL, col=plankto_ID)) + 
   geom_point(size = 3) + 
@@ -251,7 +231,7 @@ png("Output/DissolvedNutrientsReps.png", 4000, 4000, res = 400, type='cairo')
 multiplot(p1, p2, p3, cols=1)
 dev.off()
 
-#### PLOT 4: CARBONATE SYSTEM ####
+#### PLOT: CARBONATE SYSTEM ####
 # pH
 p1 <- ggplot(pH, aes(day, pH_NBS, col=plankto_ID)) + 
   geom_point(size = 3) + 
