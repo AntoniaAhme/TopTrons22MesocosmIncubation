@@ -210,8 +210,8 @@ bxp <- ggboxplot(
 bxp
 
 # Check normality
-ggqqplot(pan2, "µgL_c", ggtheme = theme_bw()) +
-  facet_grid(day ~ temp, labeller = "label_both")
+#ggqqplot(pan2, "µgL_c", ggtheme = theme_bw()) +
+#  facet_grid(day ~ temp, labeller = "label_both")
 # very few datapoints, but apparently normal
 
 # Compute 2-way RM ANOVA
@@ -256,8 +256,8 @@ bxp <- ggboxplot(
 bxp
 
 # Check normality
-ggqqplot(pan2, "o2_poc", ggtheme = theme_bw()) +
-  facet_grid(day ~ temp, labeller = "label_both")
+#ggqqplot(pan2, "o2_poc", ggtheme = theme_bw()) +
+#  facet_grid(day ~ temp, labeller = "label_both")
 # very few datapoints, but looks all right
 
 # Compute 2-way RM ANOVA
@@ -305,8 +305,8 @@ bxp <- ggboxplot(
 bxp
 
 # Check normality
-ggqqplot(pan2, "cn", ggtheme = theme_bw()) +
-  facet_grid(day ~ temp, labeller = "label_both")
+#ggqqplot(pan2, "cn", ggtheme = theme_bw()) +
+# facet_grid(day ~ temp, labeller = "label_both")
 # very few datapoints, but apparently normal
 
 # Compute 2-way RM ANOVA
@@ -359,8 +359,8 @@ bxp <- ggboxplot(
 bxp
 
 # Check normality
-ggqqplot(pan2, "cp", ggtheme = theme_bw()) +
-  facet_grid(day ~ temp, labeller = "label_both")
+#ggqqplot(pan2, "cp", ggtheme = theme_bw()) +
+#  facet_grid(day ~ temp, labeller = "label_both")
 # very few datapoints, but apparently normal
 
 # Compute 2-way RM ANOVA

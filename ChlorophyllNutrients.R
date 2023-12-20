@@ -207,8 +207,8 @@ bxp <- ggboxplot(
 bxp
 
 # Check normality
-ggqqplot(pan2, "chl_µgL", ggtheme = theme_bw()) +
-  facet_grid(day ~ temp, labeller = "label_both")
+#ggqqplot(pan2, "chl_µgL", ggtheme = theme_bw()) +
+#  facet_grid(day ~ temp, labeller = "label_both")
 # very few datapoints, but apparently normal
 
 # Compute 2-way RM ANOVA
@@ -216,13 +216,19 @@ res.aov <- anova_test(
   data = pan2, dv = chl_µgL, wid = plankto_ID, 
   between = temp, within = day)
 res.aov
-# significant temp effect and without 6 significant time effect
-
-res.aov_chl <- get_anova_table(res.aov)
-# no significant interaction + significant effects of day and temp
+# significant temp effect an no interaction
 
 # add main results to stat table
+res.aov_chl <- get_anova_table(res.aov)
+
 stat[1:3,3:6] <- res.aov_chl[,2:5]
+
+# Considering no significant interaction
+# comparisons for treatment variable
+pan2 %>%
+  pairwise_t_test(
+    chl_µgL ~ temp, paired = FALSE, 
+    p.adjust.method = "bonferroni")
 
 ## Nitrate
 # Check assumptions
@@ -240,8 +246,8 @@ bxp <- ggboxplot(
 bxp
 
 # Check normality
-ggqqplot(pan2, "no_µmolL", ggtheme = theme_bw()) +
-  facet_grid(day ~ temp, labeller = "label_both")
+#ggqqplot(pan2, "no_µmolL", ggtheme = theme_bw()) +
+#  facet_grid(day ~ temp, labeller = "label_both")
 # very few datapoints, but apparently normal
 
 # Compute 2-way RM ANOVA
@@ -256,6 +262,13 @@ res.aov_din <- get_anova_table(res.aov)
 
 # add main results to stat table
 stat[4:6,3:6] <- res.aov_din[,2:5]
+
+# Considering no significant interaction
+# comparisons for time variable
+pan2 %>%
+  pairwise_t_test(
+    no_µmolL ~ day, paired = TRUE, 
+    p.adjust.method = "bonferroni")
 
 ## Phosphate
 # Check assumptions
@@ -273,8 +286,8 @@ bxp <- ggboxplot(
 bxp
 
 # Check normality
-ggqqplot(pan2, "po_µmolL", ggtheme = theme_bw()) +
-  facet_grid(day ~ temp, labeller = "label_both")
+#ggqqplot(pan2, "po_µmolL", ggtheme = theme_bw()) +
+#  facet_grid(day ~ temp, labeller = "label_both")
 # very few datapoints, but looks all right
 
 # Compute 2-way RM ANOVA
@@ -313,8 +326,8 @@ bxp <- ggboxplot(
 bxp
 
 # Check normality
-ggqqplot(pan2, "si_µM", ggtheme = theme_bw()) +
-  facet_grid(day ~ temp, labeller = "label_both")
+#ggqqplot(pan2, "si_µM", ggtheme = theme_bw()) +
+#  facet_grid(day ~ temp, labeller = "label_both")
 # very few datapoints, but apparently normal
 
 # Compute 2-way RM ANOVA
@@ -357,8 +370,7 @@ one.way <- pan2 %>%
   get_anova_table() %>%
   adjust_pvalue(method = "bonferroni")
 one.way
-# 
-# thus perform pairwise comparisons
+# significant effect in all temps, thus perform pairwise comparisons
 
 # pairwise comparisons
 pwc <- pan2 %>%
@@ -367,7 +379,7 @@ pwc <- pan2 %>%
     si_µM ~ day, paired = TRUE,
     p.adjust.method = "bonferroni"
   )
-print(pwc, n=30)
+print(pwc, n=90)
 
 ## Save main results from rmANOVA
 write_xlsx(stat, "Data/StatisticsChlNut.xlsx")

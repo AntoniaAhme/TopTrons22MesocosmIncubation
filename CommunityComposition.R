@@ -345,8 +345,8 @@ bxp <- ggboxplot(
 bxp
 
 # Check normality
-ggqqplot(pan2, "Shannon", ggtheme = theme_bw()) +
-  facet_grid(day ~ temp, labeller = "label_both")
+#ggqqplot(pan2, "Shannon", ggtheme = theme_bw()) +
+#  facet_grid(day ~ temp, labeller = "label_both")
 # very few datapoints, but apparently normal
 
 # Compute 2-way RM ANOVA
@@ -398,8 +398,8 @@ bxp <- ggboxplot(
 bxp
 
 # Check normality
-ggqqplot(pan2, "Richness", ggtheme = theme_bw()) +
-  facet_grid(day ~ temp, labeller = "label_both")
+#ggqqplot(pan2, "Richness", ggtheme = theme_bw()) +
+#  facet_grid(day ~ temp, labeller = "label_both")
 # very few datapoints, but apparently normal
 
 # Compute 2-way RM ANOVA
@@ -430,8 +430,8 @@ bxp <- ggboxplot(
 bxp
 
 # Check normality
-ggqqplot(pan2, "Evenness", ggtheme = theme_bw()) +
-  facet_grid(day ~ temp, labeller = "label_both")
+#ggqqplot(pan2, "Evenness", ggtheme = theme_bw()) +
+#  facet_grid(day ~ temp, labeller = "label_both")
 # very few datapoints, but apparently normal
 
 # Compute 2-way RM ANOVA
@@ -743,8 +743,8 @@ pan612 <- subset(pan612, day != "24")
 pan612$day <- factor(pan612$day)
 
 # Check normality
-ggqqplot(pan612, "betadisper", ggtheme = theme_bw()) +
-  facet_grid(day ~ temp, labeller = "label_both")
+#ggqqplot(pan612, "betadisper", ggtheme = theme_bw()) +
+#  facet_grid(day ~ temp, labeller = "label_both")
 # very few datapoints, but apparently normal
 
 # Compute 2-way RM ANOVA
@@ -776,8 +776,8 @@ pan618 <- subset(pan618, day != "24")
 pan618$day <- factor(pan618$day)
 
 # Check normality
-ggqqplot(pan618, "betadisper", ggtheme = theme_bw()) +
-  facet_grid(day ~ temp, labeller = "label_both")
+#ggqqplot(pan618, "betadisper", ggtheme = theme_bw()) +
+#  facet_grid(day ~ temp, labeller = "label_both")
 # very few datapoints, but apparently normal
 
 # Compute 2-way RM ANOVA
