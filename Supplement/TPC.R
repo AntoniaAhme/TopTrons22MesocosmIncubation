@@ -200,7 +200,7 @@ ci_extra_params <- left_join(ci_extra_params, extra_params)
 #ci_extra_params <- mutate(ci_extra_params_H5, strain = "H5")
 
 
-tpc_points <- read_xlsx("TPC_points.xlsx")
+tpc_points <- read_xlsx("Data/TPC_points.xlsx")
 tpc_points$Temp <- as.numeric(tpc_points$Temp)
 
 
@@ -211,8 +211,9 @@ p1 <- ggplot() +
   geom_ribbon(aes(temp, ymin = conf_lower, ymax = conf_upper), boot1_conf_preds, alpha = 0.3)+
   scale_x_continuous(breaks = seq(0,30, by =5))+
   plot.theme+
-  labs(x = 'Temperature (ºC)',
-       y = 'Growth rate')
+  labs(x = 'Temperature (ºC)')+
+  ylab(bquote('µ' ~ '(' ~ d ^ -1 ~ ')'))
+  
 
 p1
 ggsave("Output/TPC.png", p1, width = 15, height =15 , dpi = 500, unit = "cm", device = "png")

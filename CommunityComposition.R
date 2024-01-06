@@ -141,9 +141,6 @@ unique(tax$Supergroup)
 unique(tax$Division)
 unique(tax$Class)
 
-# Replace taxonomic levels that were not annotated with "other"
-tax[is.na(tax)] <- "Other"
-
 # Remove unwanted groups
 tax <- filter(tax, tax$Division!="Metazoa")
 tax <- filter(tax, tax$Division!="Fungi")
@@ -155,8 +152,9 @@ tax <- filter(tax, tax$Supergroup!="Hacrobia:nucl")
 
 tax_all <- tax
 
-# Create tax file for phytoplankton by exluding hetero- and mixotrophs
+# Create tax file for phytoplankton by exluding heterotrophs
 # based on https://doi.org/10.1111/jeu.12691
+tax_chlo <- filter(tax, tax$Class=="Chlorarachniophyceae")
 tax <- filter(tax, tax$Supergroup!="Cercozoa")
 tax <- filter(tax, tax$Supergroup!="Apusozoa")
 tax <- filter(tax, tax$Supergroup!="Amoebozoa")
@@ -174,13 +172,15 @@ tax <- filter(tax, tax$Division!="Mesomycetozoa")
 tax <- filter(tax, tax$Division!="Centroheliozoa")
 tax <- filter(tax, tax$Division!="Stramenopiles_X")
 tax <- filter(tax, tax$Division!="Streptophyta")
-tax <- filter(tax, tax$Division!="Dinoflagellata") 
 tax <- filter(tax, tax$Class!="Syndiniales")
 tax <- filter(tax, tax$Class!="Noctilucophyceae")
-tax <- filter(tax, tax$Class!="Chrysophyceae")
+tax <- filter(tax, tax$Genus!="Minorisa")
+tax <- filter(tax, tax$Class!="Chrysophyceae") # only heterotrophs in this dataset
 
-unique(tax$Division)
-unique(tax$Class)
+tax <- rbind(tax, tax_chlo)
+
+# Replace taxonomic levels that were not annotated with "other"
+tax[is.na(tax)] <- "Other"
 
 # Subset asv tab based on newly selected taxonomy
 asv <- asv[rownames(asv) %in% tax$ASV,]
@@ -369,18 +369,6 @@ one.way <- pan2 %>%
   adjust_pvalue(method = "bonferroni")
 one.way
 # there is a significant main effect within 6 degree
-# thus perform pairwise comparisons
-
-# pairwise comparisons
-pwc <- pan2 %>%
-  group_by(temp) %>%
-  pairwise_t_test(
-    Shannon ~ day, paired = TRUE,
-    p.adjust.method = "bonferroni"
-  )
-print(pwc, n=30)
-# 6 degree differs between day 15 and 27 as well as between 24 and 27
-
 
 ## Richness
 # Check assumptions
@@ -467,7 +455,7 @@ class <- class %>%
 colnames(class)[2] <- "Group"
 
 ## Create color palette
-class_pal <- qualpal(20, colorspace=list(h=c(0,360), s=c(0.3,1), l=c(0.2,0.8)))
+class_pal <- qualpal(17, colorspace=list(h=c(0,360), s=c(0.3,1), l=c(0.2,0.8)))
 
 ## Plotting
 class_plot <- ggplot(class, aes(fill = Group, x = day, y = Abundance)) +
@@ -486,86 +474,28 @@ df <- plot_bar(genus, fill = "Genus")
 df2 <- df$data
 genus <- df2 %>% select(Sample, Genus, Abundance, temp, day, rep)
 
-# Rename species for prettier plotting
-genus$Genus[genus$Abundance < 100] <- "Other"
-genus <- genus %>%
-  mutate(Genus = recode(Genus, "Prymnesiophyceae_Clade_B4_X" = 'Prymnesiophyceae indet.')) %>%
-  mutate(Genus = recode(Genus, "Parmales_env_1_X" = 'Parmales')) %>%
-  mutate(Genus = recode(Genus, "Pedinellales_X" = 'Pedinellales'))
-
 # Subsetting
 genus_all <- genus
 genus <- subset(genus, day > 12)
 
-## Genera over whole time
-# Create color palette
-gen_pal_all <-
-  qualpal(33, colorspace = list(
-    h = c(0, 360),
-    s = c(0.3, 1),
-    l = c(0.2, 0.8)
-  ))
-
-leg_all <-
-  c(
-    "Aureococcus",
-    "Bathycoccus",
-    "Brockmanniella",
-    "Chaetoceros",
-    "Chrysochromulina",
-    "Corethron",
-    "Cylindrotheca",
-    "Dictyocha",
-    "Ditylum",
-    "Florenciella",
-    "Gephyrocapsa",
-    "Haptolina",
-    "Leptocylindrus",
-    "Micromonas",
-    "Minidiscus",
-    "Odontella",
-    "Ostreococcus",
-    "Other",
-    "Parmales",
-    "Pedinellales",
-    "Phaeocystis",
-    "Picochlorum",
-    "Plagioselmis",
-    "Prymnesiophyceae indet.",
-    "Prymnesium",
-    "Pseudo-nitzschia",
-    "Pterosperma",
-    "Pyramimonas",
-    "Skeletonema",
-    "Teleaulax",
-    "Thalassionema",
-    "Thalassiosira"
-  )
-
-## Plotting
-genus_plot_all <- ggplot(genus_all, aes(fill = Genus, x = day, y = Abundance)) +
-  facet_wrap(rep ~ temp, ncol = 3) +
-  geom_bar(position = "stack", stat = "identity") +
-  bar.theme +
-  scale_x_continuous(breaks = seq(0,27,3)) +
-  scale_fill_manual(labels = toexpr(leg_all,
-                                    plain = c('Other', 'Prymnesiophyceae indet.')),
-                    values = gen_pal_all$hex) +
-  theme(legend.text.align = 0)
-
-genus_plot_all
-ggsave("Output/PhytoGeneraAll.png", genus_plot_all, height = 10, width = 16, dpi = 320)
+# Rename species for prettier plotting
+genus$Genus[genus$Abundance < 150] <- "Other"
+genus <- genus %>%
+  mutate(Genus = recode(Genus, "Prymnesiophyceae_Clade_B4_X" = 'Prymnesiophyceae indet.')) %>%
+  mutate(Genus = recode(Genus, "Parmales_env_1_X" = 'Parmales')) %>%
+  mutate(Genus = recode(Genus, "NPK2-lineage_X" = 'Other')) %>%
+  mutate(Genus = recode(Genus, "Pedinellales_X" = 'Pedinellales'))
 
 ## Genera only over experiment
 # Create color palette
-gen_pal <- qualpal(30, colorspace=list(h=c(0,360), s=c(0.3,1), l=c(0.2,0.8)))
+gen_pal <- qualpal(31, colorspace=list(h=c(0,360), s=c(0.3,1), l=c(0.2,0.8)))
 
-leg <- c("Bathycoccus", "Chaetoceros", "Chrysochromulina", "Corethron", "Cylindrotheca",
-         "Dictyocha", "Ditylum", "Florenciella", "Gephyrocapsa", "Haptolina", "Leptocylindrus", "Micromonas",
-         "Minidiscus", "Odontella", "Other", "Parmales", "Pedinellales", "Phaeocystis",
-         "Picochlorum", "Plagioselmis", "Prymnesiophyceae indet.", "Prymnesium",
-         "Pseudo-nitzschia", "Pterosperma", "Pyramimonas", "Skeletonema", "Teleaulax", "Thalassionema",
-        "Thalassiosira")
+leg <- c("Bathycoccus", "Biecheleria", "Chaetoceros", "Chrysochromulina", "Cylindrotheca", "Dictyocha", 
+         "Ditylum", "Florenciella", "Gephyrocapsa", "Gymnodinium", "Gyrodinium",
+         "Haptolina", "Heterocapsa", "Islandinium", "Luciella", "Micromonas",
+         "Minidiscus", "Other", "Parmales", "Pedinellales", "Pelagodinium", "Phaeocystis",
+         "Picochlorum", "Prorocentrum", "Prymnesium", "Pseudo-nitzschia", "Pterosperma", 
+         "Pyramimonas", "Skeletonema", "Teleaulax", "Thalassiosira")
 
 ## Plotting
 genus_plot <- ggplot(genus, aes(fill = Genus, x = day, y = Abundance)) +
@@ -573,8 +503,9 @@ genus_plot <- ggplot(genus, aes(fill = Genus, x = day, y = Abundance)) +
   geom_bar(position = "stack", stat = "identity") +
   bar.theme +
   scale_x_continuous(breaks = seq(0,27,3)) +
-  scale_fill_manual(labels = toexpr(leg,
-                                    plain = c('Other', 'Prymnesiophyceae indet.')),
+  scale_fill_manual(
+    labels = toexpr(leg,
+                                    plain = c('Other')),
                                     values = gen_pal$hex) +
   theme(legend.text.align = 0)
 
@@ -587,8 +518,12 @@ df <- plot_bar(species, fill = "Species")
 df2 <- df$data
 species <- df2 %>% select(Sample, Species, Abundance, temp, day, rep)
 
+# Extract relative Phaeocystis abundances
+phaeo <- subset(species, Species == "Phaeocystis_globosa")
+writexl::write_xlsx(phaeo, "Supplement/Data/Phaeocystis.xlsx")
+
 # Rename species for prettier plotting
-species$Species[species$Abundance < 100] <- "Other"
+species$Species[species$Abundance < 200] <- "Other"
 species <- species %>%
   mutate(Species = recode(Species, "Chaetoceros_diadema_1" = 'Chaetoceros_diadema')) %>%
   mutate(Species = recode(Species, "Chaetoceros_didymus_2" = 'Chaetoceros_didymus')) %>%
@@ -602,11 +537,12 @@ species <- species %>%
   mutate(Species = recode(Species, "Chrysophyceae_XXX_sp." = 'Chrysophyceae_indet.')) %>%
   mutate(Species = recode(Species, "Chaetoceros_sp_Clade_Na11C3" = 'Chaetoceros_sp.')) %>%
   mutate(Species = recode(Species, "Parmales_env_1_X_sp." = 'Parmales_indet.')) %>%
+  mutate(Species = recode(Species, "NPK2-lineage_X_sp." = 'Other')) %>%
   mutate(Species = recode(Species, "Pedinellales_X_sp." = 'Pedinellales_indet.'))
 species$Species <- gsub('_', ' ', species$Species)
 
 ## Create color palette
-spe_pal <- qualpal(55, colorspace=list(h=c(0,360), s=c(0.3,1), l=c(0.2,0.8)))
+spe_pal <- qualpal(47, colorspace=list(h=c(0,360), s=c(0.3,1), l=c(0.2,0.8)))
 
 ## Plotting
 species_plot <- ggplot(species, aes(fill = Species, x = day, y = Abundance)) +
