@@ -152,6 +152,7 @@ tax <- filter(tax, tax$Division!="Ochrophyta")
 tax <- filter(tax, tax$Division!="Chlorophyta")
 tax <- filter(tax, tax$Division!="Rhodophyta")
 tax <- filter(tax, tax$Division!="Cryptophyta")
+tax <- filter(tax, tax$Division!="Dinoflagellata")
 tax <- filter(tax, tax$Division!="Prasinodermophyta")
 tax <- filter(tax, tax$Division!="Chrompodellids")
 tax <- filter(tax, tax$Class!="Chlorarachniophyceae") 
@@ -180,7 +181,7 @@ samples = sample_data(sam)
 ps_raw <- phyloseq(OTU, TAX, samples)
 
 # Check rarefaction curve for justifying sampling depths
-rarecurve(t(otu_table(ps_raw)), step=50, cex=0.5) # looks fine
+#rarecurve(t(otu_table(ps_raw)), step=50, cex=0.5) # looks fine
 # save manually in RSTudio
 
 ## Scaling with ranked subsampling (srs)
@@ -205,33 +206,6 @@ SAM = sample_data(sam)
 
 # Create phyloseq object
 ps <- phyloseq(OTU, TAX, SAM)
-
-#### CALCULATE & PLOT DIVERSITY ####
-ps.rich <- microbial::richness(ps,  method = c("Observed", "Evenness", "Shannon"))
-
-# Add diversity measures to sample tab
-sam$Richness <- ps.rich$Observed
-sam$Evenness <- ps.rich$Evenness
-sam$Shannon <- ps.rich$Shannon
-sam$cosm <- as.factor(sam$cosm)
-div <- subset(sam, day > 12)
-
-## Plot diversity
-# Create summary of data for shannon index
-div_shan <- data_summary(div, varname="Shannon", 
-                         groupnames=c("day", "temp"))
-
-shan_time <- ggplot(div_shan, aes(x=day, y=Shannon, color=temp)) + 
-  geom_point(position=position_dodge(0.05), size = 4)+
-  geom_line(size = 1)+
-  geom_errorbar(aes(ymin=Shannon-se, ymax=Shannon+se), size=1.1, width=.8,
-                position=position_dodge(0.05)) +
-  plot.theme +
-  labs(x="Incubation day", y=bquote("Shannon index")) + 
-  scale_x_continuous(breaks = seq(15, 27, 3))+
-  scale_color_manual(values=temp_pal)
-
-shan_time
 
 #### BARGRAPHS ####
 ### Bargraph on class level over time per treatment
@@ -264,7 +238,7 @@ class <- class %>%
 colnames(class)[2] <- "Group"
 
 ## Create color palette
-class_pal <- qualpal(23, colorspace=list(h=c(0,360), s=c(0.3,1), l=c(0.2,0.8)))
+class_pal <- qualpal(21, colorspace=list(h=c(0,360), s=c(0.3,1), l=c(0.2,0.8)))
 
 ## Plotting
 class_plot <- ggplot(class, aes(fill = Group, x = day, y = Abundance)) +
