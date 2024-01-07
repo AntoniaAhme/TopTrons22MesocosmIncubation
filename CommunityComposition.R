@@ -176,6 +176,19 @@ tax <- filter(tax, tax$Class!="Syndiniales")
 tax <- filter(tax, tax$Class!="Noctilucophyceae")
 tax <- filter(tax, tax$Genus!="Minorisa")
 tax <- filter(tax, tax$Class!="Chrysophyceae") # only heterotrophs in this dataset
+tax <- filter(tax, tax$Family!="Amphisoleniaceae")
+tax <- filter(tax, tax$Genus!="Gyrodinium")
+tax <- filter(tax, tax$Genus!="Islandinium")
+tax <- filter(tax, tax$Genus!="Archaeperidinium")
+tax <- filter(tax, tax$Genus!="Dinophysis")
+tax <- filter(tax, tax$Genus!="Diplopsalis")
+tax <- filter(tax, tax$Genus!="Luciella")
+tax <- filter(tax, tax$Genus!="Phalacroma")
+tax <- filter(tax, tax$Genus!="Polykrikos")
+tax <- filter(tax, tax$Genus!="Protoperidinium")
+tax <- filter(tax, tax$Genus!="Qia")
+tax <- filter(tax, tax$Genus!="Protodinium")
+tax <- filter(tax, tax$Genus!="Stockeria")
 
 tax <- rbind(tax, tax_chlo)
 
@@ -324,7 +337,6 @@ stat['DFn'] <- NA
 stat['DFd'] <- NA
 stat['F'] <- NA
 stat['P'] <- NA
-
 
 # Exclude groups with too few datapoints
 div <- subset(div, day != "24")
@@ -488,14 +500,14 @@ genus <- genus %>%
 
 ## Genera only over experiment
 # Create color palette
-gen_pal <- qualpal(31, colorspace=list(h=c(0,360), s=c(0.3,1), l=c(0.2,0.8)))
+gen_pal <- qualpal(28, colorspace=list(h=c(0,360), s=c(0.3,1), l=c(0.2,0.8)))
 
-leg <- c("Bathycoccus", "Biecheleria", "Chaetoceros", "Chrysochromulina", "Cylindrotheca", "Dictyocha", 
-         "Ditylum", "Florenciella", "Gephyrocapsa", "Gymnodinium", "Gyrodinium",
-         "Haptolina", "Heterocapsa", "Islandinium", "Luciella", "Micromonas",
-         "Minidiscus", "Other", "Parmales", "Pedinellales", "Pelagodinium", "Phaeocystis",
-         "Picochlorum", "Prorocentrum", "Prymnesium", "Pseudo-nitzschia", "Pterosperma", 
-         "Pyramimonas", "Skeletonema", "Teleaulax", "Thalassiosira")
+leg <- c("Bathycoccus", "Biecheleria", "Chaetoceros", "Chrysochromulina", "Cylindrotheca", 
+         "Dictyocha", "Ditylum", "Florenciella", "Gephyrocapsa", "Gymnodinium",
+         "Haptolina", "Heterocapsa", "Micromonas", "Minidiscus", "Other", "Parmales", 
+         "Pedinellales", "Pelagodinium", "Phaeocystis", "Picochlorum", "Prorocentrum", 
+         "Prymnesium", "Pseudo-nitzschia", "Pterosperma", "Pyramimonas", "Skeletonema", 
+         "Thalassiosira")
 
 ## Plotting
 genus_plot <- ggplot(genus, aes(fill = Genus, x = day, y = Abundance)) +
@@ -506,7 +518,7 @@ genus_plot <- ggplot(genus, aes(fill = Genus, x = day, y = Abundance)) +
   scale_fill_manual(
     labels = toexpr(leg,
                                     plain = c('Other')),
-                                    values = gen_pal$hex) +
+                                   values = gen_pal$hex) +
   theme(legend.text.align = 0)
 
 genus_plot
@@ -542,7 +554,7 @@ species <- species %>%
 species$Species <- gsub('_', ' ', species$Species)
 
 ## Create color palette
-spe_pal <- qualpal(47, colorspace=list(h=c(0,360), s=c(0.3,1), l=c(0.2,0.8)))
+spe_pal <- qualpal(37, colorspace=list(h=c(0,360), s=c(0.3,1), l=c(0.2,0.8)))
 
 ## Plotting
 species_plot <- ggplot(species, aes(fill = Species, x = day, y = Abundance)) +

@@ -146,6 +146,21 @@ tax <- filter(tax, tax$Supergroup!="Hacrobia:nucl")
 # Create taxonomy file for microzooplankton
 # based on https://doi.org/10.1111/jeu.12691
 tax_chry <- filter(tax, tax$Class=="Chrysophyceae")
+tax_noct <- filter(tax, tax$Class=="Noctilucophyceae")
+tax_amp <- filter(tax, tax$Family=="Amphisoleniaceae")
+tax_mino <- filter(tax, tax$Genus=="Minosira")
+tax_gyr <- filter(tax, tax$Genus=="Gyrodinium")
+tax_is <- filter(tax, tax$Genus=="Islandinium")
+tax_arc <- filter(tax, tax$Genus=="Archaeperidinium")
+tax_din <- filter(tax, tax$Genus=="Dinophysis")
+tax_dip <- filter(tax, tax$Genus=="Diplopsalis")
+tax_luc <- filter(tax, tax$Genus=="Luciella")
+tax_pha <- filter(tax, tax$Genus=="Phalacroma")
+tax_pol <- filter(tax, tax$Genus=="Polykrikos")
+tax_pro <- filter(tax, tax$Genus=="Protoperidinium")
+tax_qia <- filter(tax, tax$Genus=="Qia")
+tax_po <- filter(tax, tax$Genus=="Protodinium")
+tax_sto <- filter(tax, tax$Genus=="Stockeria")
 tax <- filter(tax, tax$Supergroup!="Archaeplastida")
 tax <- filter(tax, tax$Division!="Haptophyta")
 tax <- filter(tax, tax$Division!="Ochrophyta")
@@ -160,7 +175,9 @@ tax <- filter(tax, tax$Class!="Chlorarachniophyceae")
 unique(tax$Division)
 unique(tax$Class)
 
-tax <- rbind(tax, tax_chry)
+tax <- rbind(tax, tax_chry, tax_noct, tax_mino, tax_amp, tax_gyr, tax_is, 
+             tax_arc, tax_din, tax_dip, tax_luc, tax_pha, tax_pol, tax_pro, 
+             tax_qia, tax_po, tax_sto)
 
 # Subset asv tab based on newly selected taxonomy
 asv <- asv[rownames(asv) %in% tax$ASV,]
@@ -238,7 +255,7 @@ class <- class %>%
 colnames(class)[2] <- "Group"
 
 ## Create color palette
-class_pal <- qualpal(21, colorspace=list(h=c(0,360), s=c(0.3,1), l=c(0.2,0.8)))
+class_pal <- qualpal(22, colorspace=list(h=c(0,360), s=c(0.3,1), l=c(0.2,0.8)))
 
 ## Plotting
 class_plot <- ggplot(class, aes(fill = Group, x = day, y = Abundance)) +
