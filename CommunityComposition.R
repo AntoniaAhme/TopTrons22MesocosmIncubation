@@ -186,6 +186,7 @@ tax <- filter(tax, tax$Genus!="Luciella")
 tax <- filter(tax, tax$Genus!="Phalacroma")
 tax <- filter(tax, tax$Genus!="Polykrikos")
 tax <- filter(tax, tax$Genus!="Protoperidinium")
+tax <- filter(tax, tax$Genus!="Biecheleria")
 tax <- filter(tax, tax$Genus!="Qia")
 tax <- filter(tax, tax$Genus!="Protodinium")
 tax <- filter(tax, tax$Genus!="Stockeria")
@@ -500,9 +501,9 @@ genus <- genus %>%
 
 ## Genera only over experiment
 # Create color palette
-gen_pal <- qualpal(28, colorspace=list(h=c(0,360), s=c(0.3,1), l=c(0.2,0.8)))
+gen_pal <- qualpal(27, colorspace=list(h=c(0,360), s=c(0.3,1), l=c(0.2,0.8)))
 
-leg <- c("Bathycoccus", "Biecheleria", "Chaetoceros", "Chrysochromulina", "Cylindrotheca", 
+leg <- c("Bathycoccus", "Chaetoceros", "Chrysochromulina", "Cylindrotheca", 
          "Dictyocha", "Ditylum", "Florenciella", "Gephyrocapsa", "Gymnodinium",
          "Haptolina", "Heterocapsa", "Micromonas", "Minidiscus", "Other", "Parmales", 
          "Pedinellales", "Pelagodinium", "Phaeocystis", "Picochlorum", "Prorocentrum", 
@@ -554,7 +555,7 @@ species <- species %>%
 species$Species <- gsub('_', ' ', species$Species)
 
 ## Create color palette
-spe_pal <- qualpal(37, colorspace=list(h=c(0,360), s=c(0.3,1), l=c(0.2,0.8)))
+spe_pal <- qualpal(36, colorspace=list(h=c(0,360), s=c(0.3,1), l=c(0.2,0.8)))
 
 ## Plotting
 species_plot <- ggplot(species, aes(fill = Species, x = day, y = Abundance)) +

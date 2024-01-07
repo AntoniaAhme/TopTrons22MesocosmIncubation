@@ -149,6 +149,7 @@ tax_chry <- filter(tax, tax$Class=="Chrysophyceae")
 tax_noct <- filter(tax, tax$Class=="Noctilucophyceae")
 tax_amp <- filter(tax, tax$Family=="Amphisoleniaceae")
 tax_mino <- filter(tax, tax$Genus=="Minosira")
+tax_bie <- filter(tax, tax$Genus=="Biecheleria")
 tax_gyr <- filter(tax, tax$Genus=="Gyrodinium")
 tax_is <- filter(tax, tax$Genus=="Islandinium")
 tax_arc <- filter(tax, tax$Genus=="Archaeperidinium")
@@ -177,7 +178,7 @@ unique(tax$Class)
 
 tax <- rbind(tax, tax_chry, tax_noct, tax_mino, tax_amp, tax_gyr, tax_is, 
              tax_arc, tax_din, tax_dip, tax_luc, tax_pha, tax_pol, tax_pro, 
-             tax_qia, tax_po, tax_sto)
+             tax_qia, tax_po, tax_sto, tax_bie)
 
 # Subset asv tab based on newly selected taxonomy
 asv <- asv[rownames(asv) %in% tax$ASV,]
